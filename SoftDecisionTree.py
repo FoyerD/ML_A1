@@ -2,14 +2,14 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.tree import _tree
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 import pandas as pd
 from ucimlrepo import fetch_ucirepo
   
-
+# ---------- Implimintation ----------
 
 class SoftDecisionTreeClassifier(DecisionTreeClassifier):
-    def __init__(self, alpha=0.1, n_runs=100):
+    def __init__(self, alpha=0.0001, n_runs=10):
         super().__init__()
         self.alpha = alpha
         self.n_runs = n_runs
@@ -64,51 +64,97 @@ class SoftDecisionTreeClassifier(DecisionTreeClassifier):
         return all_probs / self.n_runs
 
 
-def test_model(dataset):
-    # data (as pandas dataframes) 
-    X = dataset.data.features 
-    y = dataset.data.targets
-    #X = dataset[0]
-    #y = dataset[1]
+# ---------- General Data Functionallity ----------
 
+def test_model_UCI(dataset, transform_label_func, encode=False):
+    X = dataset.data.features
+    if encode:
+        X = pd.get_dummies(X, drop_first=False)
+    y = dataset.data.targets
+    test_model_X_y(X, y, transform_label_func)
+
+def test_model_csv(df, transform_label_func, label_col, encode=False):
+    df = df.dropna() # Drop Rows containing Nan as a label
+    X = df.drop(label_col, axis=1)
+    if encode:
+        X = pd.get_dummies(X, drop_first=False)
+    y = df[label_col]
+    test_model_X_y(X, y, transform_label_func)
+
+def test_model_X_y(X, y, transform_label_func):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    model = SoftDecisionTreeClassifier()
-    model.fit(X_train,y_train)
+    soft_model = SoftDecisionTreeClassifier()
+    hard_model = DecisionTreeClassifier()
+    print("Soft descision tree classifier:")
+    train_and_eval(X_train, X_test, y_train, y_test, soft_model, transform_label_func)
+    print("Regular descision tree classifier:")
+    train_and_eval(X_train, X_test, y_train, y_test, hard_model, transform_label_func)
+
+    
+
+def train_and_eval(X_train, X_test, y_train, y_test, model, transform_label_func):
+    model.fit(X_train.values, y_train.values)
     probas = model.predict_proba(X_test.to_numpy())
     y_predict = np.argmax(probas, axis=1)
-    print(transform(y_test.to_numpy()))
-    print(y_predict)
-    print(accuracy_score(transform(y_test.to_numpy()), y_predict))
-     
-def transform(lst):
-    new_lst = []
-    for l in lst:
-        if l == "Dropout":
-            new_lst.append(0)
-        elif l == "Enrolled":
-            new_lst.append(1)
-        else:
-            new_lst.append(2)
-    return new_lst
+    clean_y_test = transform_label_func(y_test.to_numpy())
 
-      
+    print("Accuracy")
+    print(accuracy_score(clean_y_test, y_predict))
+    
+    # Need to sort out multiclass AUCs
+    # print("AUC:")
+    # roc_auc_score(clean_y_test, y_predict)
+
+
+
+# ---------- Dataset 1: Graduation -----------
+
+def test_model_graduation(dataset):
+    print(" ----- Dataset 1 - Graduation -----")
+    test_model_UCI(dataset, transform_label_graduation)
+     
+def transform_label_graduation(lst):
+    return np.vectorize({"Dropout": 0, "Enrolled": 1, "Graduate": 2}.get)(lst)
+
+# ----------- Dataset 2: mushrooms -----------
+
+def test_model_mushrooms(dataset):
+    print(" ----- Dataset 2 - mushrooms -----")
+    test_model_UCI(dataset, transform_label_mushrooms, encode=True)
+
+
+def transform_label_mushrooms(lst):
+    return np.vectorize({"e": 0, "p": 1}.get)(lst)
+
+# ----------- Dataset 3: Android -----------
+
+def test_model_android(dataset):
+    print(" ----- Dataset 3 - Android -----")
+    test_model_csv(dataset, transform_label_android, label_col='Label')
+
+
+def transform_label_android(lst):
+    return lst
+
 
 
 def main():
-    # fetch datasets
+    # Dataset 1
     predict_students_dropout_and_academic_success = fetch_ucirepo(id=697)
-    test_model(predict_students_dropout_and_academic_success)
+    test_model_graduation(predict_students_dropout_and_academic_success)
     
+    # Dataset 2
     secondary_mushroom = fetch_ucirepo(id=848)
-    test_model(secondary_mushroom)
+    test_model_mushrooms(secondary_mushroom)
 
-    tunadromd = pd.read_csv("TUNADROMD.csv")
-    test_model(tunadromd)
+    # Dataset 3
+    tunadromd = pd.read_csv("TUANDROMD.csv")
+    test_model_android(tunadromd)
 
-    mushroom = fetch_ucirepo(id=73)
-    test_model(tunadromd)
+    # mushroom = fetch_ucirepo(id=73)
+    # test_model(tunadromd)
 
-    mnist = 1
+    #mnist = 1
 
 if __name__ == "__main__":
     main()
