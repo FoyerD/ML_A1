@@ -1,70 +1,16 @@
 import numpy as np
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.tree import _tree
 from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import mean_squared_error as mse
 import pandas as pd
 from ucimlrepo import fetch_ucirepo
-  
-# ---------- Implimintation ----------
 
-class SoftDecisionTreeClassifier(DecisionTreeClassifier):
-    def __init__(self, alpha=0.0001, n_runs=10):
-        super().__init__()
-        self.alpha = alpha
-        self.n_runs = n_runs
+from SoftDecisionTreeClassifier import SoftDecisionTreeClassifier
+from SoftDecisionTreeRegression import SoftDecisionTreeRegressor
 
-    def _soft_predict(self, tree, X):
-        """
-        Helper function that implements the "soft split" logic for one prediction.
-        """
-        n_samples = X.shape[0]
-        n_classes = self.n_classes_
-        # Array to hold the probabilities of each sample for each class
-        prob = np.zeros((n_samples, n_classes))
-        
-        for sample_idx in range(n_samples):
-            sample = X[sample_idx]
-            node_id = 0  # start at the root node
-            # Traverse the tree
-            while tree.feature[node_id] != _tree.TREE_UNDEFINED:
-                feature = tree.feature[node_id]
-                threshold = tree.threshold[node_id]
-                # Get the split decision (soft split)
-                left_direction = sample[feature] <= threshold
-                # Soft routing: with probability 1-alpha go the normal direction, with alpha go the opposite direction
-                if np.random.rand() < self.alpha:
-                    left_direction = not left_direction
-                
-                # Move to the left or right child node
-                if left_direction:
-                    node_id = tree.children_left[node_id]
-                else:
-                    node_id = tree.children_right[node_id]
-
-            # Now we're at a leaf node, the probability of each class is stored there
-            prob[sample_idx] = tree.value[node_id].flatten() / tree.value[node_id].sum()
-
-        return prob
-
-    def predict_proba(self, X):
-        """
-        Override the predict_proba function to implement soft splits.
-        """
-        # Get the decision tree structure
-        tree = self.tree_
-        # Run the soft prediction n_runs times
-        all_probs = np.zeros((X.shape[0], self.n_classes_))
-
-        for _ in range(self.n_runs):
-            probs = self._soft_predict(tree, X)
-            all_probs += probs
-        
-        # Average the probabilities over n_runs
-        return all_probs / self.n_runs
-
-
-# ---------- General Data Functionallity ----------
+# ---------- Classification ----------
 
 def test_model_UCI(dataset, transform_label_func, encode=False):
     X = dataset.data.features
@@ -105,7 +51,40 @@ def train_and_eval(X_train, X_test, y_train, y_test, model, transform_label_func
     # print("AUC:")
     # roc_auc_score(clean_y_test, y_predict)
 
+# ---------- Regression ----------
 
+def test_model_UCI_reg(dataset, encode=False):
+    X = dataset.data.features
+    if encode:
+        X = pd.get_dummies(X, drop_first=False)
+    y = dataset.data.targets
+    test_model_X_y_reg(X, y)
+
+def test_model_csv_reg(df, label_col, encode=False):
+    df = df.dropna() # Drop Rows containing Nan as a label
+    X = df.drop(label_col, axis=1)
+    if encode:
+        X = pd.get_dummies(X, drop_first=False)
+    y = df[label_col]
+    test_model_X_y_reg(X, y)
+
+def test_model_X_y_reg(X, y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    soft_model = SoftDecisionTreeRegressor()
+    hard_model = DecisionTreeRegressor()
+    print("Soft descision tree regressor:")
+    train_and_eval_reg(X_train, X_test, y_train, y_test, soft_model)
+    print("Regular descision tree regressor:")
+    train_and_eval_reg(X_train, X_test, y_train, y_test, hard_model)
+
+    
+
+def train_and_eval_reg(X_train, X_test, y_train, y_test, model):
+    model.fit(X_train.values, y_train.values)
+    y_predict = model.predict(X_test.to_numpy())
+
+    print("MSE:")
+    print(mse(y_test, y_predict))
 
 # ---------- Dataset 1: Graduation -----------
 
@@ -137,8 +116,7 @@ def transform_label_android(lst):
     return lst
 
 
-
-def main():
+def classification_data():
     # Dataset 1
     predict_students_dropout_and_academic_success = fetch_ucirepo(id=697)
     test_model_graduation(predict_students_dropout_and_academic_success)
@@ -155,6 +133,15 @@ def main():
     # test_model(tunadromd)
 
     #mnist = 1
+
+def regression_data():
+    wine_quality = fetch_ucirepo(id=186) 
+    test_model_UCI_reg(wine_quality)
+
+
+def main():
+    regression_data()
+    classification_data()
 
 if __name__ == "__main__":
     main()
