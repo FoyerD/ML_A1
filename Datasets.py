@@ -15,6 +15,9 @@ from sklearn.metrics import mean_squared_error as mse
 import pandas as pd
 from ucimlrepo import fetch_ucirepo
 import matplotlib.pyplot as plt
+from sklearn.metrics import RocCurveDisplay
+from sklearn.preprocessing import LabelBinarizer
+
 
 
 from SoftDecisionTreeClassifier import SoftDecisionTreeClassifier
@@ -22,51 +25,56 @@ from SoftDecisionTreeRegression import SoftDecisionTreeRegressor
 
 n = 100
 a = 0.05
+param_grid_test = {"n_runs": [10], "alpha": [0.00001]}
 param_grid = {"n_runs": [10, 50], "alpha": [0.00001,0.01, 0.05]}
 mega_param_grid = {'n_runs': [10, 20, 50, 100], 'alpha': [0.001, 0.01, 0.02, 0.05, 0.01]}
 
 # ---------- Classification ----------
 
-def test_model_UCI(dataset, transform_label_func, encode=False):
+def test_model_UCI(dataset, transform_label_func, encode=False, reverse_transform_label_func=None):
     X = dataset.data.features
     if encode:
         X = pd.get_dummies(X, drop_first=False)
     y = dataset.data.targets
-    test_model_X_y(X, y, transform_label_func)
+    test_model_X_y(X, y, transform_label_func, reverse_transform_label_func)
 
-def test_model_csv(df, transform_label_func, label_col, encode=False):
+def test_model_csv(df, transform_label_func, label_col, encode=False, reverse_transform_label_func=None):
     df = df.dropna() # Drop Rows containing Nan as a label
     X = df.drop(label_col, axis=1)
     if encode:
         X = pd.get_dummies(X, drop_first=False)
     y = df[label_col]
-    test_model_X_y(X, y, transform_label_func)
+    test_model_X_y(X, y, transform_label_func, reverse_transform_label_func)
 
-def test_model_X_y(X, y, transform_label_func):
+def test_model_X_y(X, y, transform_label_func, reverse_transform_label_func=None):
     y = transform_label_func(y.to_numpy())
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     hard_model = DecisionTreeClassifier()
-    soft_model = GridSearchCV(SoftDecisionTreeClassifier(), param_grid, cv=2)
+    soft_model = GridSearchCV(SoftDecisionTreeClassifier(), param_grid_test, cv=2)
     
     # soft_model = SoftDecisionTreeClassifier(n_runs=n, alpha=a)
     # hard_model = DecisionTreeClassifier(n_runs=n, alpha=a)
+    classes = np.unique(y)
 
     print("Soft descision tree classifier:")
-    y_pred_soft = train_and_eval(X_train, X_test, y_train, y_test, soft_model)
+    y_pred_soft = train_and_eval(X_train, X_test, y_train, y_test, soft_model, classes)
     cross_val_clf(X_train, y_train, soft_model, 10)
     print("parameters: " + str(soft_model.best_params_))
     print("Regular descision tree classifier:")
-    y_pred_hard = train_and_eval(X_train, X_test, y_train, y_test, hard_model)
+    y_pred_hard = train_and_eval(X_train, X_test, y_train, y_test, hard_model, classes)
     cross_val_clf(X_train, y_train, hard_model, 10)
-    plot_roc_curve(y_test, y_pred_soft, y_pred_hard)
+
+    if(len(classes) <= 2):
+        plot_roc_curve(y_test, y_pred_soft, y_pred_hard)
+    else:
+        pass
+        #plot_roc_multi_curve(y_test,y_pred_soft, y_pred_hard, reverse_transform_label_func, list(classes))
 
     confusion_matrix_plot(y_test, y_pred_soft, y_pred_hard)
 
 
-    
-
-def train_and_eval(X_train, X_test, y_train, y_test, model):
+def train_and_eval(X_train, X_test, y_train, y_test, model, classes):
     model.fit(X_train.values, y_train)
     probas = model.predict_proba(X_test.to_numpy())
     y_predict = np.argmax(probas, axis=1)
@@ -74,10 +82,21 @@ def train_and_eval(X_train, X_test, y_train, y_test, model):
     print("Accuracy")
     print(accuracy_score(y_test, y_predict))
     
+    if(len(classes) > 2):
+        label_binarizer = LabelBinarizer().fit(y_test)
+        y_onehot_test = label_binarizer.transform(y_test)
+        print(y_onehot_test.shape)
+        fpr, tpr, roc_auc = dict(), dict(), dict()
+        # Compute micro-average ROC curve and ROC area
+        fpr["micro"], tpr["micro"], _ = roc_curve(y_onehot_test.ravel(), probas.ravel())
+        roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
-    fpr, tpr, thresholds = roc_curve(y_test, y_predict)
-    print("AUC:")
-    print(auc(fpr, tpr))
+        print(f"Micro-averaged One-vs-Rest ROC AUC score:\n{roc_auc['micro']:.2f}")
+
+    else:
+        fpr, tpr, thresholds = roc_curve(y_test, y_predict)
+        print("AUC:")
+        print(auc(fpr, tpr))
 
     return y_predict
 
@@ -100,6 +119,42 @@ def plot_pr_curve(X_test, y_test, soft_clf, hard_clf):
     plt.tight_layout()
     plt.show()
     
+def plot_roc_multi_curve(y_test, y_pred_soft, y_pred_hard, reverse_transform, classes):
+    y_test = reverse_transform(y_test)
+    y_pred_soft = reverse_transform(y_pred_soft)
+    y_pred_hard = reverse_transform(y_pred_hard)
+
+    y_onehot_test = y_test.transform(y_test)
+    for class_of_interest in classes:
+        class_id = np.flatnonzero(y_test.classes_ == class_of_interest)[0]
+
+        display = RocCurveDisplay.from_predictions(
+            y_onehot_test[:, class_id],
+            y_pred_soft[:, class_id],
+            name=f"{class_of_interest} vs the rest",
+            color="darkorange",
+            plot_chance_level=True,
+            despine=True,
+        )   
+        _ = display.ax_.set(
+            xlabel="False Positive Rate",
+            ylabel="True Positive Rate",
+            title="Soft {class_of_interest}-vs-Rest ROC curves",
+        )
+
+        display = RocCurveDisplay.from_predictions(
+            y_onehot_test[:, class_id],
+            y_pred_soft[:, class_id],
+            name=f"{class_of_interest} vs the rest",
+            color="darkorange",
+            plot_chance_level=True,
+            despine=True,
+        )   
+        _ = display.ax_.set(
+            xlabel="False Positive Rate",
+            ylabel="True Positive Rate",
+            title=f"Regular {class_of_interest}-vs-Rest ROC curves",
+        )
 
 def plot_roc_curve(y_test, y_pred_soft, y_pred_hard):
     fpr_soft, tpr_soft, _ = roc_curve(y_test, y_pred_soft)
@@ -148,6 +203,11 @@ def confusion_matrix_plot(y_test, y_pred_soft, y_pred_hard):
     plt.show()
 
 
+
+
+
+
+
 # ---------- Regression ----------
 
 def test_model_UCI_reg(dataset, encode=False):
@@ -185,15 +245,27 @@ def train_and_eval_reg(X_train, X_test, y_train, y_test, model):
     print("RMSE:")
     print(rmse(y_test, y_predict))
 
-# ---------- Dataset 1: Apples -----------
+# ---------- Dataset 1: Water quality -----------
 
-def test_model_water(dataset):
-    print(" ----- Dataset 1 - Water quality -----")
-    test_model_csv(dataset, transform_label_water, label_col="Potability", encode=True)
-    print("")
+#def test_model_water(dataset):
+#    print(" ----- Dataset 1 - Water quality -----")
+#    test_model_csv(dataset, transform_label_water, label_col="Potability", encode=True)
+#    print("")
      
-def transform_label_water(lst):
-    return lst
+#def transform_label_water(lst):
+#    return lst
+
+# ---------- Dataset 1: Graduation -----------
+
+def test_model_graduation(dataset):
+    print(" ----- Dataset 1 - Graduation -----")
+    test_model_UCI(dataset, transform_label_graduation, reverse_transform_label_graduation)
+
+def transform_label_graduation(lst):
+    return np.vectorize({"Dropout": 0, "Enrolled": 1, "Graduate": 2}.get)(lst)
+
+def reverse_transform_label_graduation(lst):
+    return np.vectorize({0 : "Dropout", 1: "Enrolled", 2: "Graduate"}.get)(lst)
 
 # ----------- Dataset 2: mushrooms -----------
 
@@ -241,9 +313,13 @@ def transform_label_mountain_vs_beaches(lst):
 def classification_data():
     
     # Dataset 1
-    water = pd.read_csv("water_potability.csv")
-    test_model_water(water)
+    #water = pd.read_csv("water_potability.csv")
+    #test_model_water(water)
     
+    # Dataset 1
+    predict_students_dropout_and_academic_success = fetch_ucirepo(id=697)
+    test_model_graduation(predict_students_dropout_and_academic_success)
+
     # Dataset 2
     secondary_mushroom = fetch_ucirepo(id=848)
     test_model_mushrooms(secondary_mushroom)
@@ -295,9 +371,9 @@ def regression_data():
 
 
 def main():
-    regression_data()
+    #regression_data()
     print("\n\n")
-    #classification_data()
+    classification_data()
 
 if __name__ == "__main__":
     main()
