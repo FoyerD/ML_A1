@@ -155,7 +155,7 @@ def test_model_UCI_reg(dataset, encode=False):
     if encode:
         X = pd.get_dummies(X, drop_first=False)
     y = dataset.data.targets
-    #test_model_X_y_reg(X, y)
+    test_model_X_y_reg(X, y)
     plot_target_distrubtion(y)
 
 def test_model_csv_reg(df, label_col, encode=False):
@@ -164,17 +164,17 @@ def test_model_csv_reg(df, label_col, encode=False):
     if encode:
         X = pd.get_dummies(X, drop_first=False)
     y = df[label_col]
-    #test_model_X_y_reg(X, y)
+    test_model_X_y_reg(X, y)
     plot_target_distrubtion(y)
 
 def test_model_X_y_reg(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    #soft_model = SoftDecisionTreeRegressor()
-    soft_model = GridSearchCV(SoftDecisionTreeRegressor(), mega_param_grid, cv=5)
+    soft_model = SoftDecisionTreeRegressor()
+    #soft_model = GridSearchCV(SoftDecisionTreeRegressor(), mega_param_grid, cv=5)
     hard_model = DecisionTreeRegressor()
     print("Soft descision tree regressor:")
     train_and_eval_reg(X_train, X_test, y_train, y_test, soft_model)
-    print("parameters: " + str(soft_model.best_params_))
+#    print("parameters: " + str(soft_model.best_params_))
     print("Regular descision tree regressor:")
     train_and_eval_reg(X_train, X_test, y_train, y_test, hard_model)
 
@@ -186,6 +186,7 @@ def train_and_eval_reg(X_train, X_test, y_train, y_test, model):
 
     print("RMSE:")
     print(rmse(y_test, y_predict))
+    plot_regression_graph(y_test, y_predict)
 
 
 def plot_target_distrubtion(vals):
@@ -195,6 +196,14 @@ def plot_target_distrubtion(vals):
     plt.xlabel("Index")
     plt.ylabel("Values")
     plt.title("Target Values Distribution")
+    plt.show()
+
+def plot_regression_graph(y_test, y_pred):
+    plt.scatter(y_test, y_pred, alpha=0.7)
+    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], color='red', lw=2)
+    plt.xlabel("True Values")
+    plt.ylabel("Predicted Values")
+    plt.title("Regression Tree: True vs Predicted")
     plt.show()
 
 
