@@ -233,10 +233,12 @@ def test_model_X_y_reg(X, y):
     #soft_model = GridSearchCV(SoftDecisionTreeRegressor(), mega_param_grid, cv=5)
     hard_model = DecisionTreeRegressor()
     print("Soft descision tree regressor:")
-    train_and_eval_reg(X_train, X_test, y_train, y_test, soft_model)
+    y_soft_pred = train_and_eval_reg(X_train, X_test, y_train, y_test, soft_model)
 #    print("parameters: " + str(soft_model.best_params_))
     print("Regular descision tree regressor:")
-    train_and_eval_reg(X_train, X_test, y_train, y_test, hard_model)
+    y_hard_pred = train_and_eval_reg(X_train, X_test, y_train, y_test, hard_model)
+    plot_regression_graph(y_test, y_soft_pred, y_hard_pred)
+
 
     
 
@@ -246,8 +248,7 @@ def train_and_eval_reg(X_train, X_test, y_train, y_test, model):
 
     print("RMSE:")
     print(rmse(y_test, y_predict))
-    plot_regression_graph(y_test, y_predict)
-
+    return y_predict
 
 def plot_target_distrubtion(vals):
     n = len(vals)
@@ -258,12 +259,23 @@ def plot_target_distrubtion(vals):
     plt.title("Target Values Distribution")
     plt.show()
 
-def plot_regression_graph(y_test, y_pred):
-    plt.scatter(y_test, y_pred, alpha=0.7)
-    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], color='red', lw=2)
-    plt.xlabel("True Values")
-    plt.ylabel("Predicted Values")
-    plt.title("Regression Tree: True vs Predicted")
+def plot_regression_graph(y_test, y_soft_pred, y_hard_pred):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+    axes[0].scatter(y_test, y_soft_pred, alpha=0.7)
+    axes[0].plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], color='red', lw=2)
+    axes[0].set_xlabel("True Values")
+    axes[0].set_ylabel("Predicted Values")
+    axes[0].set_title("Soft Regression Tree: True vs Predicted")
+
+    axes[1].scatter(y_test, y_hard_pred, alpha=0.7)
+    axes[1].plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], color='red', lw=2)
+    axes[1].set_xlabel("True Values")
+    axes[1].set_ylabel("Predicted Values")
+    axes[1].set_title("Regular Regression Tree: True vs Predicted")
+
+
+    plt.tight_layout()
     plt.show()
 
 
@@ -395,7 +407,7 @@ def regression_data():
 def main():
     regression_data()
     print("\n\n")
-    classification_data()
+    #classification_data()
 
 if __name__ == "__main__":
     main()
