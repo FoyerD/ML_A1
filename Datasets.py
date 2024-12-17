@@ -1,6 +1,8 @@
+
 import numpy as np
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.tree import _tree
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, confusion_matrix, roc_auc_score, roc_curve, auc
 from sklearn.metrics import mean_squared_error as mse
@@ -17,6 +19,11 @@ import matplotlib.pyplot as plt
 
 from SoftDecisionTreeClassifier import SoftDecisionTreeClassifier
 from SoftDecisionTreeRegression import SoftDecisionTreeRegressor
+
+n = 100
+a = 0.05
+param_grid = {"n_runs": [10, 50], "alpha": [0.00001,0.01, 0.05]}
+mega_param_grid = {'n_runs': list(range(10, 101, 20)), 'alpha': list(range(0.02, 0.1, 0.02))}
 
 # ---------- Classification ----------
 
@@ -38,22 +45,23 @@ def test_model_csv(df, transform_label_func, label_col, encode=False):
 def test_model_X_y(X, y, transform_label_func):
     y = transform_label_func(y.to_numpy())
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    soft_model = SoftDecisionTreeClassifier()
+
     hard_model = DecisionTreeClassifier()
+    soft_model = GridSearchCV(SoftDecisionTreeClassifier(), param_grid, cv=2)
     
+    # soft_model = SoftDecisionTreeClassifier(n_runs=n, alpha=a)
+    # hard_model = DecisionTreeClassifier(n_runs=n, alpha=a)
 
     print("Soft descision tree classifier:")
     y_pred_soft = train_and_eval(X_train, X_test, y_train, y_test, soft_model)
     cross_val_clf(X_train, y_train, soft_model, 10)
+    print("parameters: " + str(soft_model.best_params_))
     print("Regular descision tree classifier:")
     y_pred_hard = train_and_eval(X_train, X_test, y_train, y_test, hard_model)
     cross_val_clf(X_train, y_train, hard_model, 10)
     plot_roc_curve(y_test, y_pred_soft, y_pred_hard)
 
     confusion_matrix_plot(y_test, y_pred_soft, y_pred_hard)
-
-    
-
 
 
     
@@ -159,10 +167,12 @@ def test_model_csv_reg(df, label_col, encode=False):
 
 def test_model_X_y_reg(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    soft_model = SoftDecisionTreeRegressor()
+    #soft_model = SoftDecisionTreeRegressor()
+    soft_model = GridSearchCV(SoftDecisionTreeRegressor(), param_grid, cv=2)
     hard_model = DecisionTreeRegressor()
     print("Soft descision tree regressor:")
     train_and_eval_reg(X_train, X_test, y_train, y_test, soft_model)
+    print("parameters: " + str(soft_model.best_params_))
     print("Regular descision tree regressor:")
     train_and_eval_reg(X_train, X_test, y_train, y_test, hard_model)
 
@@ -219,7 +229,7 @@ def transform_label_gym(lst):
 
 # ----------- Dataset 5: Mountans vs Beaches -----------
 def test_model_mountain_vs_beaches(dataset):
-    print(" ----- Dataset 5 - Mountain vs Beaches--")
+    print(" ----- Dataset 5 - Mountain vs Beaches-----")
     test_model_csv(dataset, transform_label_mountain_vs_beaches, label_col='Preference', encode=True)
     print("")
 
@@ -254,31 +264,31 @@ def classification_data():
 def regression_data():
 
     # Dataset Reg 1
-    print(" ----- Dataset 1 Reg - Wine quality --")
+    print(" ----- Dataset 1 Reg - Wine quality -----")
     wine_quality = fetch_ucirepo(id=186) 
     test_model_UCI_reg(wine_quality)
     print("")
 
     # Dataset Reg 2
-    print(" ----- Dataset 2 Reg - Diamond prices --")
+    print(" ----- Dataset 2 Reg - Diamond prices -----")
     diamonds = pd.read_csv("diamonds.csv")
     test_model_csv_reg(diamonds, label_col="price", encode=True)
     print("")
 
     # Dataset Reg 3
-    print(" ----- Dataset 3 Reg - Units of alcohol in drinks --")
+    print(" ----- Dataset 3 Reg - Units of alcohol in drinks -----")
     alcohol = pd.read_csv("alcohol.csv")
     test_model_csv_reg(alcohol, label_col="Units of Alcohol", encode=True)
     print("")
 
     # Dataset Reg 4
-    print(" ----- Dataset 4 Reg - Movies worldwide gross --")
+    print(" ----- Dataset 4 Reg - Movies worldwide gross -----")
     movies = pd.read_csv("movie_statistic_dataset.csv")
     test_model_csv_reg(movies, label_col="Worldwide gross $", encode=True)
     print("")
 
     # Dataset Reg 5
-    print(" ----- Dataset 5 Reg - World wide happiness 2024 --")
+    print(" ----- Dataset 5 Reg - World wide happiness 2024 -----")
     happines = pd.read_csv("World_Happiness_Report_2024.csv")
     test_model_csv_reg(happines, label_col="Positive affect", encode=True)
     print("")
@@ -287,7 +297,7 @@ def regression_data():
 def main():
     regression_data()
     print("\n\n")
-    classification_data()
+    #classification_data()
 
 if __name__ == "__main__":
     main()
