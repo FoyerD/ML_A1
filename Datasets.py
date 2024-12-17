@@ -4,6 +4,7 @@ from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.tree import _tree
 from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve, auc
 from sklearn.metrics import mean_squared_error as mse
+from sklearn.metrics import root_mean_squared_error as rmse
 import pandas as pd
 from ucimlrepo import fetch_ucirepo
 from sklearn.utils.multiclass import type_of_target
@@ -141,14 +142,15 @@ def train_and_eval_reg(X_train, X_test, y_train, y_test, model):
     model.fit(X_train.values, y_train.values)
     y_predict = model.predict(X_test.to_numpy())
 
-    print("MSE:")
-    print(mse(y_test, y_predict))
+    print("RMSE:")
+    print(rmse(y_test, y_predict))
 
 # ---------- Dataset 1: Apples -----------
 
 def test_model_water(dataset):
     print(" ----- Dataset 1 - Water quality -----")
     test_model_csv(dataset, transform_label_water, label_col="Potability", encode=True)
+    print("")
      
 def transform_label_water(lst):
     return lst
@@ -158,6 +160,7 @@ def transform_label_water(lst):
 def test_model_mushrooms(dataset):
     print(" ----- Dataset 2 - mushrooms -----")
     test_model_UCI(dataset, transform_label_mushrooms, encode=True)
+    print("")
 
 
 def transform_label_mushrooms(lst):
@@ -168,6 +171,7 @@ def transform_label_mushrooms(lst):
 def test_model_android(dataset):
     print(" ----- Dataset 3 - Android -----")
     test_model_csv(dataset, transform_label_android, label_col='Label')
+    print("")
 
 
 def transform_label_android(lst):
@@ -177,6 +181,7 @@ def transform_label_android(lst):
 def test_model_gym(dataset):
     print(" ----- Dataset 4 - Gym Membership -----")
     test_model_csv(dataset, transform_label_gym, label_col='Gender', encode=True)
+    print("")
 
 
 def transform_label_gym(lst):
@@ -186,6 +191,7 @@ def transform_label_gym(lst):
 def test_model_mountain_vs_beaches(dataset):
     print(" ----- Dataset 5 - Mountain vs Beaches--")
     test_model_csv(dataset, transform_label_mountain_vs_beaches, label_col='Preference', encode=True)
+    print("")
 
 
 def transform_label_mountain_vs_beaches(lst):
@@ -216,12 +222,41 @@ def classification_data():
     test_model_mountain_vs_beaches(mountains_vs_beaches)
 
 def regression_data():
+
+    # Dataset Reg 1
+    print(" ----- Dataset 1 Reg - Wine quality --")
     wine_quality = fetch_ucirepo(id=186) 
     test_model_UCI_reg(wine_quality)
+    print("")
+
+    # Dataset Reg 2
+    print(" ----- Dataset 2 Reg - Diamond prices --")
+    diamonds = pd.read_csv("diamonds.csv")
+    test_model_csv_reg(diamonds, label_col="price", encode=True)
+    print("")
+
+    # Dataset Reg 3
+    print(" ----- Dataset 3 Reg - Units of alcohol in drinks --")
+    alcohol = pd.read_csv("alcohol.csv")
+    test_model_csv_reg(alcohol, label_col="Units of Alcohol", encode=True)
+    print("")
+
+    # Dataset Reg 4
+    print(" ----- Dataset 4 Reg - Movies worldwide gross --")
+    movies = pd.read_csv("movie_statistic_dataset.csv")
+    test_model_csv_reg(movies, label_col="Worldwide gross $", encode=True)
+    print("")
+
+    # Dataset Reg 5
+    print(" ----- Dataset 5 Reg - World wide happiness 2024 --")
+    happines = pd.read_csv("World_Happiness_Report_2024.csv")
+    test_model_csv_reg(happines, label_col="Positive affect", encode=True)
+    print("")
 
 
 def main():
     regression_data()
+    print("\n\n")
     classification_data()
 
 if __name__ == "__main__":
