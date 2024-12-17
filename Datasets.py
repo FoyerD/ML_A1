@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.tree import _tree
-from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve, auc
+from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, confusion_matrix, roc_auc_score, roc_curve, auc
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.metrics import root_mean_squared_error as rmse
 import pandas as pd
@@ -49,6 +49,9 @@ def test_model_X_y(X, y, transform_label_func):
     y_pred_hard = train_and_eval(X_train, X_test, y_train, y_test, hard_model)
     cross_val_clf(X_train, y_train, hard_model, 10)
     plot_roc_curve(y_test, y_pred_soft, y_pred_hard)
+
+    confusion_matrix_plot(y_test, y_pred_soft, y_pred_hard)
+
     
 
 
@@ -117,6 +120,24 @@ def cross_val_clf(X, y, clf, f):
     scores = cross_val_score(clf, X, y, cv=f)
     print("%f accuracy with a standard deviation of %f" % (scores.mean(), scores.std()))
 
+
+def confusion_matrix_plot(y_test, y_pred_soft, y_pred_hard):
+    cm_soft = confusion_matrix(y_test, y_pred_soft)
+    cm_hard = confusion_matrix(y_test, y_pred_hard)
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+    disp1 = ConfusionMatrixDisplay(confusion_matrix=cm_soft)
+    disp1.plot(ax=axes[0])
+    axes[0].set_title("Soft Decision Tree Classifier Confusion Matrix")
+
+    disp2 = ConfusionMatrixDisplay(confusion_matrix=cm_hard)
+    disp2.plot(ax=axes[1])
+    axes[1].set_title("Regular Decision Tree Classifier Confusion Matrix")
+
+    plt.tight_layout()
+
+    plt.show()
 
 
 # ---------- Regression ----------
