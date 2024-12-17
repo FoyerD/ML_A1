@@ -36,31 +36,39 @@ def test_model_csv(df, transform_label_func, label_col, encode=False):
     test_model_X_y(X, y, transform_label_func)
 
 def test_model_X_y(X, y, transform_label_func):
+    y = transform_label_func(y.to_numpy())
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     soft_model = SoftDecisionTreeClassifier()
     hard_model = DecisionTreeClassifier()
+    
+
     print("Soft descision tree classifier:")
-    train_and_eval(X_train, X_test, y_train, y_test, soft_model, transform_label_func)
+    y_pred_soft = train_and_eval(X_train, X_test, y_train, y_test, soft_model)
+    cross_val_clf(X_train, y_train, soft_model, 10)
     print("Regular descision tree classifier:")
-    train_and_eval(X_train, X_test, y_train, y_test, hard_model, transform_label_func)
+    y_pred_hard = train_and_eval(X_train, X_test, y_train, y_test, hard_model)
+    cross_val_clf(X_train, y_train, hard_model, 10)
+    plot_roc_curve(y_test, y_pred_soft, y_pred_hard)
+    
+
+
 
     
 
-def train_and_eval(X_train, X_test, y_train, y_test, model, transform_label_func):
-    model.fit(X_train.values, y_train.values)
+def train_and_eval(X_train, X_test, y_train, y_test, model):
+    model.fit(X_train.values, y_train)
     probas = model.predict_proba(X_test.to_numpy())
     y_predict = np.argmax(probas, axis=1)
-    clean_y_test = transform_label_func(y_test.to_numpy())
 
     print("Accuracy")
-    print(accuracy_score(clean_y_test, y_predict))
+    print(accuracy_score(y_test, y_predict))
     
-    #extractin metrics
-    #clean_y_test = clean_y_test.reshape((clean_y_test.shape[0]))
-    #y_predict = y_predict.reshape((y_predict.shape[0], 1))
-    fpr, tpr, thresholds = roc_curve(clean_y_test, y_predict)
+
+    fpr, tpr, thresholds = roc_curve(y_test, y_predict)
     print("AUC:")
     print(auc(fpr, tpr))
+
+    return y_predict
 
 
 def plot_pr_curve(X_test, y_test, soft_clf, hard_clf):
@@ -82,31 +90,32 @@ def plot_pr_curve(X_test, y_test, soft_clf, hard_clf):
     plt.show()
     
 
-def plot_roc_curve(y, y_pred_soft, y_pred_hard):
-    fpr_soft, tpr_soft, _ = roc_curve(y, y_pred_soft)
-    fpr_hard, tpr_hard, _ = roc_curve(y, y_pred_hard)
+def plot_roc_curve(y_test, y_pred_soft, y_pred_hard):
+    fpr_soft, tpr_soft, _ = roc_curve(y_test, y_pred_soft)
+    fpr_hard, tpr_hard, _ = roc_curve(y_test, y_pred_hard)
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 6))
 
     # Soft decision tree
     axes[0].plot(fpr_soft, tpr_soft)
     axes[0].set_title("Soft Decision Tree Classifier")
-    axes[0].xlabel('False Positive Rate')
-    axes[0].ylabel('True Positive Rate')
+    axes[0].set_xlabel('False Positive Rate')
+    axes[0].set_ylabel('True Positive Rate')
 
     # Regular decision tree
     axes[1].plot(fpr_hard, tpr_hard)
     axes[1].set_title("Regular Decision Tree Classifier")
-    axes[1].xlabel('False Positive Rate')
-    axes[1].ylabel('True Positive Rate')
+    axes[1].set_xlabel('False Positive Rate')
+    axes[1].set_ylabel('True Positive Rate')
 
     plt.tight_layout()
     plt.show()
 
 
 def cross_val_clf(X, y, clf, f):
+    print("Cross Validation:")
     scores = cross_val_score(clf, X, y, cv=f)
-    print("%0.2f accuracy with a standard deviation of %0.2f" % (scores.mean(), scores.std()))
+    print("%f accuracy with a standard deviation of %f" % (scores.mean(), scores.std()))
 
 
 
@@ -198,7 +207,6 @@ def transform_label_mountain_vs_beaches(lst):
     return lst
 
 
-
 def classification_data():
     
     # Dataset 1
@@ -220,6 +228,7 @@ def classification_data():
     # Dataset 5
     mountains_vs_beaches = pd.read_csv("mountains_vs_beaches_preferences.csv")
     test_model_mountain_vs_beaches(mountains_vs_beaches)
+
 
 def regression_data():
 
