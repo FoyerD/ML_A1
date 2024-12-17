@@ -1,11 +1,13 @@
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.tree import _tree
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import PrecisionRecallDisplay, accuracy_score, roc_auc_score, roc_curve
 from sklearn.metrics import mean_squared_error as mse
 import pandas as pd
 from ucimlrepo import fetch_ucirepo
+import matplotlib.pyplot as plt
+
 
 from SoftDecisionTreeClassifier import SoftDecisionTreeClassifier
 from SoftDecisionTreeRegression import SoftDecisionTreeRegressor
@@ -50,6 +52,54 @@ def train_and_eval(X_train, X_test, y_train, y_test, model, transform_label_func
     # Need to sort out multiclass AUCs
     # print("AUC:")
     # roc_auc_score(clean_y_test, y_predict)
+
+
+def plot_pr_curve(X_test, y_test, soft_clf, hard_clf):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+    # First plot
+    display1 = PrecisionRecallDisplay.from_estimator(
+        soft_clf, X_test, y_test, name="SoftDecisionTreeClassifier", plot_chance_level=True, ax=axes[0]
+    )
+    axes[0].set_title("Soft Decision Tree Classifier")
+
+    # Second plot
+    display2 = PrecisionRecallDisplay.from_estimator(
+        hard_clf, X_test, y_test, name="DecsionTreeClassifier", plot_chance_level=True, ax=axes[1]
+    )
+    axes[1].set_title("Regular Decision Tree Classifier")
+
+    plt.tight_layout()
+    plt.show()
+    
+
+def plot_roc_curve(y, y_pred_soft, y_pred_hard):
+    fpr_soft, tpr_soft, _ = roc_curve(y, y_pred_soft)
+    fpr_hard, tpr_hard, _ = roc_curve(y, y_pred_hard)
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+    # Soft decision tree
+    axes[0].plot(fpr_soft, tpr_soft)
+    axes[0].set_title("Soft Decision Tree Classifier")
+    axes[0].xlabel('False Positive Rate')
+    axes[0].ylabel('True Positive Rate')
+
+    # Regular decision tree
+    axes[1].plot(fpr_hard, tpr_hard)
+    axes[1].set_title("Regular Decision Tree Classifier")
+    axes[1].xlabel('False Positive Rate')
+    axes[1].ylabel('True Positive Rate')
+
+    plt.tight_layout()
+    plt.show()
+
+
+def cross_val_clf(X, y, clf, f):
+    scores = cross_val_score(clf, X, y, cv=f)
+    print("%0.2f accuracy with a standard deviation of %0.2f" % (scores.mean(), scores.std()))
+
+
 
 # ---------- Regression ----------
 
