@@ -393,7 +393,7 @@ def regression_data():
 
 
 def main():
-    #regression_data()
+    regression_data()
     print("\n\n")
     classification_data()
 
