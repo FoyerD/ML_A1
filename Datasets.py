@@ -23,7 +23,7 @@ from SoftDecisionTreeRegression import SoftDecisionTreeRegressor
 n = 100
 a = 0.05
 param_grid = {"n_runs": [10, 50], "alpha": [0.00001,0.01, 0.05]}
-mega_param_grid = {'n_runs': [10, 20, 50, 100], 'alpha': [0.001, 0.01, 0.02, 0.05, 0.01]}
+mega_param_grid = {'n_runs': [10, 50, 100], 'alpha': [0.001, 0.01, 0.05]}
 
 # ---------- Classification ----------
 
@@ -155,7 +155,8 @@ def test_model_UCI_reg(dataset, encode=False):
     if encode:
         X = pd.get_dummies(X, drop_first=False)
     y = dataset.data.targets
-    test_model_X_y_reg(X, y)
+    #test_model_X_y_reg(X, y)
+    plot_target_distrubtion(y)
 
 def test_model_csv_reg(df, label_col, encode=False):
     df = df.dropna() # Drop Rows containing Nan as a label
@@ -163,7 +164,8 @@ def test_model_csv_reg(df, label_col, encode=False):
     if encode:
         X = pd.get_dummies(X, drop_first=False)
     y = df[label_col]
-    test_model_X_y_reg(X, y)
+    #test_model_X_y_reg(X, y)
+    plot_target_distrubtion(y)
 
 def test_model_X_y_reg(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -184,6 +186,17 @@ def train_and_eval_reg(X_train, X_test, y_train, y_test, model):
 
     print("RMSE:")
     print(rmse(y_test, y_predict))
+
+
+def plot_target_distrubtion(vals):
+    n = len(vals)
+    indecies = range(n)
+    plt.scatter(indecies, vals)
+    plt.xlabel("Index")
+    plt.ylabel("Values")
+    plt.title("Target Values Distribution")
+    plt.show()
+
 
 # ---------- Dataset 1: Apples -----------
 
