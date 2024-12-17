@@ -23,7 +23,7 @@ from SoftDecisionTreeRegression import SoftDecisionTreeRegressor
 n = 100
 a = 0.05
 param_grid = {"n_runs": [10, 50], "alpha": [0.00001,0.01, 0.05]}
-mega_param_grid = {'n_runs': list(range(10, 101, 20)), 'alpha': list(range(0.02, 0.1, 0.02))}
+mega_param_grid = {'n_runs': [10, 20, 50, 100], 'alpha': [0.001, 0.01, 0.02, 0.05, 0.01]}
 
 # ---------- Classification ----------
 
@@ -168,7 +168,7 @@ def test_model_csv_reg(df, label_col, encode=False):
 def test_model_X_y_reg(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     #soft_model = SoftDecisionTreeRegressor()
-    soft_model = GridSearchCV(SoftDecisionTreeRegressor(), param_grid, cv=2)
+    soft_model = GridSearchCV(SoftDecisionTreeRegressor(), mega_param_grid, cv=5)
     hard_model = DecisionTreeRegressor()
     print("Soft descision tree regressor:")
     train_and_eval_reg(X_train, X_test, y_train, y_test, soft_model)
