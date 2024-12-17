@@ -2,7 +2,7 @@
 import numpy as np
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split, RepeatedKFold
 from sklearn.tree import _tree
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, confusion_matrix, roc_auc_score, roc_curve, auc
 from sklearn.metrics import mean_squared_error as mse
@@ -180,7 +180,9 @@ def plot_roc_curve(y_test, y_pred_soft, y_pred_hard):
 
 def cross_val_clf(X, y, clf, f):
     print("Cross Validation:")
-    scores = cross_val_score(clf, X, y, cv=f)
+    rkf = RepeatedKFold(n_splits=5, n_repeats=2)
+    scores = rkf.get_n_splits(X=X,y=y)
+    scores = cross_val_score(clf, X, y, cv=rkf)
     print("%f accuracy with a standard deviation of %f" % (scores.mean(), scores.std()))
 
 
@@ -405,9 +407,9 @@ def regression_data():
 
 
 def main():
-    regression_data()
+    #regression_data()
     print("\n\n")
-    #classification_data()
+    classification_data()
 
 if __name__ == "__main__":
     main()
