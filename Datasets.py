@@ -2,10 +2,14 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.tree import _tree
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve, auc
 from sklearn.metrics import mean_squared_error as mse
 import pandas as pd
 from ucimlrepo import fetch_ucirepo
+from sklearn.utils.multiclass import type_of_target
+import kagglehub
+
+
 
 from SoftDecisionTreeClassifier import SoftDecisionTreeClassifier
 from SoftDecisionTreeRegression import SoftDecisionTreeRegressor
@@ -47,9 +51,12 @@ def train_and_eval(X_train, X_test, y_train, y_test, model, transform_label_func
     print("Accuracy")
     print(accuracy_score(clean_y_test, y_predict))
     
-    # Need to sort out multiclass AUCs
-    # print("AUC:")
-    # roc_auc_score(clean_y_test, y_predict)
+    #extractin metrics
+    #clean_y_test = clean_y_test.reshape((clean_y_test.shape[0]))
+    #y_predict = y_predict.reshape((y_predict.shape[0], 1))
+    fpr, tpr, thresholds = roc_curve(clean_y_test, y_predict)
+    print("AUC:")
+    print(auc(fpr, tpr))
 
 # ---------- Regression ----------
 
@@ -86,14 +93,14 @@ def train_and_eval_reg(X_train, X_test, y_train, y_test, model):
     print("MSE:")
     print(mse(y_test, y_predict))
 
-# ---------- Dataset 1: Graduation -----------
+# ---------- Dataset 1: Apples -----------
 
-def test_model_graduation(dataset):
-    print(" ----- Dataset 1 - Graduation -----")
-    test_model_UCI(dataset, transform_label_graduation)
+def test_model_water(dataset):
+    print(" ----- Dataset 1 - Water quality -----")
+    test_model_csv(dataset, transform_label_water, label_col="Potability", encode=True)
      
-def transform_label_graduation(lst):
-    return np.vectorize({"Dropout": 0, "Enrolled": 1, "Graduate": 2}.get)(lst)
+def transform_label_water(lst):
+    return lst
 
 # ----------- Dataset 2: mushrooms -----------
 
@@ -115,11 +122,31 @@ def test_model_android(dataset):
 def transform_label_android(lst):
     return lst
 
+# ----------- Dataset 4: Gym Membership -----------
+def test_model_gym(dataset):
+    print(" ----- Dataset 4 - Gym Membership -----")
+    test_model_csv(dataset, transform_label_gym, label_col='Gender', encode=True)
+
+
+def transform_label_gym(lst):
+    return np.vectorize({"Male": 1, "Female": 0}.get)(lst)
+
+# ----------- Dataset 5: Mountans vs Beaches -----------
+def test_model_mountain_vs_beaches(dataset):
+    print(" ----- Dataset 5 - Mountain vs Beaches--")
+    test_model_csv(dataset, transform_label_mountain_vs_beaches, label_col='Preference', encode=True)
+
+
+def transform_label_mountain_vs_beaches(lst):
+    return lst
+
+
 
 def classification_data():
+    
     # Dataset 1
-    predict_students_dropout_and_academic_success = fetch_ucirepo(id=697)
-    test_model_graduation(predict_students_dropout_and_academic_success)
+    water = pd.read_csv("water_potability.csv")
+    test_model_water(water)
     
     # Dataset 2
     secondary_mushroom = fetch_ucirepo(id=848)
@@ -129,10 +156,13 @@ def classification_data():
     tunadromd = pd.read_csv("TUANDROMD.csv")
     test_model_android(tunadromd)
 
-    # mushroom = fetch_ucirepo(id=73)
-    # test_model(tunadromd)
+    # Dataset 4
+    gym_membership = pd.read_csv("gym_members_exercise_tracking.csv")
+    test_model_gym(gym_membership)
 
-    #mnist = 1
+    # Dataset 5
+    mountains_vs_beaches = pd.read_csv("mountains_vs_beaches_preferences.csv")
+    test_model_mountain_vs_beaches(mountains_vs_beaches)
 
 def regression_data():
     wine_quality = fetch_ucirepo(id=186) 
