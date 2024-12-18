@@ -2,10 +2,10 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import _tree
 
-class SoftDecisionTreeClassifier(DecisionTreeClassifier):
-    def __init__(self, base_alpha=0.1, n_runs=100):
+class AdaSoftDecisionTreeClassifier(DecisionTreeClassifier):
+    def __init__(self, alpha=0.1, n_runs=100):
         super().__init__()
-        self.base_alpha = base_alpha  # Base alpha used when information gain is 0
+        self.alpha = alpha  # Base alpha used when information gain is 0
         self.n_runs = n_runs
 
     def _calculate_information_gain(self, tree, node_id):
@@ -48,10 +48,10 @@ class SoftDecisionTreeClassifier(DecisionTreeClassifier):
                 # Calculate information gain for current node
                 info_gain = self._calculate_information_gain(tree, node_id)
                 # Adjust alpha based on information gain: more certainty = less randomness
-                alpha = self.base_alpha * (1 - info_gain)
+                dec_alpha = self.alpha * (1 - info_gain)
 
                 left_direction = sample[feature] <= threshold
-                if np.random.rand() < alpha:
+                if np.random.rand() <dec_alpha:
                     left_direction = not left_direction
                 
                 if left_direction:
