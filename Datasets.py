@@ -22,11 +22,11 @@ from sklearn.preprocessing import LabelBinarizer
 
 from SoftDecisionTreeClassifier import SoftDecisionTreeClassifier
 from SoftDecisionTreeRegression import SoftDecisionTreeRegressor
-from AdaSoftDecisionTreeClassifier import AdaSoftDecisionTreeClassifier
+from WeightedDecisionTreeClassifier import WeightedSoftDecisionTreeClassifier
 
 n = 100
 a = 0.05
-param_grid_test = {"n_runs": [100], "alpha": [0.1]}
+param_grid_test = {"n_runs": [100], "alpha": [0.01]}
 param_grid = {"n_runs": [10, 50], "alpha": [0.00001,0.01, 0.05]}
 mega_param_grid = {'n_runs': [10, 50, 100], 'alpha': [0.001, 0.01, 0.05]}
 
@@ -55,7 +55,7 @@ def test_model_X_y(X, y, transform_label_func, reverse_transform_label_func=None
     #soft_model = GridSearchCV(SoftDecisionTreeClassifier(), param_grid_test, cv=2)
 
     # Testing Adaptive tree
-    soft_model = GridSearchCV(AdaSoftDecisionTreeClassifier(), param_grid_test, cv=2)
+    soft_model = GridSearchCV(WeightedSoftDecisionTreeClassifier(), param_grid_test, cv=2)
     hard_model = GridSearchCV(SoftDecisionTreeClassifier(), param_grid_test, cv=2)
     
     # soft_model = SoftDecisionTreeClassifier(n_runs=n, alpha=a)
