@@ -11,8 +11,9 @@ class WeightedSoftDecisionTreeClassifier(DecisionTreeClassifier):
     def _get_leaf_weight(self, tree, node_id):
         impurity = tree.impurity[node_id]
         # lower impurity -> higher weight
-        normalize_weight = 0.0001
-        return 1 / (impurity + normalize_weight)  # Adding a small value to avoid division by zero
+        # normalize_weight = 0.0001
+        # return 1 / (impurity + normalize_weight)  # Adding a small value to avoid division by zero
+        return 1 - impurity
 
     def _soft_predict(self, tree, X):
         n_samples = X.shape[0]
@@ -57,5 +58,5 @@ class WeightedSoftDecisionTreeClassifier(DecisionTreeClassifier):
         for i in range(n_samples):
             all_probs[i] = all_probs[i] / sum_weights[i]
 
-        return all_probs / self.n_runs
+        return all_probs
 
