@@ -57,5 +57,5 @@ class WeightedSoftDecisionTreeClassifier(DecisionTreeClassifier):
         for i in range(n_samples):
             all_probs[i] = all_probs[i] / sum_weights[i]
 
-        return all_probs / self.n_runs
+        return all_probs
 
