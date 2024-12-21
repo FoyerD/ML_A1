@@ -3,7 +3,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import _tree
 
 class SoftDecisionTreeClassifier(DecisionTreeClassifier):
-    def __init__(self, alpha=0.0001, n_runs=10):
+    def __init__(self, alpha=0.05, n_runs=100):
         super().__init__()
         self.alpha = alpha
         self.n_runs = n_runs
@@ -36,7 +36,6 @@ class SoftDecisionTreeClassifier(DecisionTreeClassifier):
 
     def predict_proba(self, X):
         tree = self.tree_
-
         all_probs = np.zeros((X.shape[0], self.n_classes_))
 
         for _ in range(self.n_runs):

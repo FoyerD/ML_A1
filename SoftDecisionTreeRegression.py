@@ -3,7 +3,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree import _tree
 
 class SoftDecisionTreeRegressor(DecisionTreeRegressor):
-    def __init__(self, alpha=0.001, n_runs=1):
+    def __init__(self, alpha=0.05, n_runs=100):
         super().__init__()
         self.alpha = alpha
         self.n_runs = n_runs

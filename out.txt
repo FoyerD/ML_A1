@@ -1,0 +1,196 @@
+ ----- Dataset 1 Reg - Wine quality -----
+Soft descision tree regressor:
+RMSE: 0.715615764972323
+GS best parameters: {'alpha': 0.05, 'n_runs': 100}
+GS RMSE: 0.714762413458002
+
+Regular descision tree regressor:
+RMSE: 0.8553002171977169
+
+ ----- Dataset 2 Reg - Diamond prices -----
+Soft descision tree regressor:
+RMSE: 854.7101859267501
+GS best parameters: {'alpha': 0.01, 'n_runs': 100}
+GS RMSE: 724.2846059195056
+
+Regular descision tree regressor:
+RMSE: 753.4848282798434
+
+ ----- Dataset 3 Reg - Units of alcohol in drinks -----
+Soft descision tree regressor:
+RMSE: 0.09443983121771286
+GS best parameters: {'alpha': 0.01, 'n_runs': 100}
+GS RMSE: 0.0631028346584801
+
+Regular descision tree regressor:
+RMSE: 0.0600179184713566
+
+ ----- Dataset 4 Reg - Movies worldwide gross -----
+Soft descision tree regressor:
+RMSE: 88848570.210321
+GS best parameters: {'alpha': 0.01, 'n_runs': 50}
+GS RMSE: 91120717.29558814
+
+Regular descision tree regressor:
+RMSE: 83112573.85160774
+
+ ----- Dataset 5 Reg - World wide happiness 2024 -----
+Soft descision tree regressor:
+RMSE: 0.07078513207153571
+GS best parameters: {'alpha': 0.05, 'n_runs': 100}
+GS RMSE: 0.06982742482410027
+
+Regular descision tree regressor:
+RMSE: 0.07646851272196813
+
+
+
+
+ ----- Dataset 1 - Graduation -----
+Soft descision tree classifier:
+Accuracy: 0.6870056497175141
+AUC Micro Avareged OvR multicalss: 0.7652542372881356
+Cross Validation:
+0.677175 accuracy with a standard deviation of 0.020607
+GS best parameters: {'alpha': 0.1, 'n_runs': 100}
+GS Accuracy: 0.7028248587570621
+GS AUC Micro Avareged OvR multicalss: 0.7771186440677965
+
+Weighted descision tree classifier:
+Accuracy: 0.6858757062146893
+AUC Micro Avareged OvR multicalss: 0.7644067796610169
+Cross Validation:
+0.673494 accuracy with a standard deviation of 0.010932
+GS best parameters: {'alpha': 0.1, 'n_runs': 100}
+GS Accuracy: 0.7129943502824859
+GS AUC Micro Avareged OvR multicalss: 0.7847457627118644
+
+Regular descision tree classifier:
+Accuracy: 0.6926553672316385
+AUC Micro Avareged OvR multicalss: 0.7694915254237288
+Cross Validation:
+0.672086 accuracy with a standard deviation of 0.016381
+ ----- Dataset 2 - mushrooms -----
+Soft descision tree classifier:
+Accuracy: 0.8927460291468806
+AUC: 0.8797020448297531
+Cross Validation:
+0.998690 accuracy with a standard deviation of 0.000182
+GS best parameters: {'alpha': 0.01, 'n_runs': 100}
+GS Accuracy: 0.999263140658261
+GS AUC: 0.9992633468526595
+
+Weighted descision tree classifier:
+Accuracy: 0.8927460291468806
+AUC: 0.8798999237028121
+Cross Validation:
+0.998496 accuracy with a standard deviation of 0.000471
+GS best parameters: {'alpha': 0.01, 'n_runs': 100}
+GS Accuracy: 0.9993450139184542
+GS AUC: 0.9993911690617616
+
+Regular descision tree classifier:
+Accuracy: 0.9987719010971017
+AUC: 0.9988202153903256
+Cross Validation:
+0.998690 accuracy with a standard deviation of 0.000292
+
+ ----- Dataset 3 - Android -----
+Soft descision tree classifier:
+Accuracy: 0.9888017917133258
+AUC: 0.9762530710608267
+Cross Validation:
+0.986979 accuracy with a standard deviation of 0.006563
+GS best parameters: {'alpha': 0.01, 'n_runs': 50}
+GS Accuracy: 0.9888017917133258
+GS AUC: 0.9762530710608267
+
+Weighted descision tree classifier:
+Accuracy: 0.9876819708846585
+AUC: 0.9734597749714411
+Cross Validation:
+0.987399 accuracy with a standard deviation of 0.004246
+GS best parameters: {'alpha': 0.1, 'n_runs': 100}
+GS Accuracy: 0.8880179171332587
+GS AUC: 0.9153208769541337
+
+Regular descision tree classifier:
+Accuracy: 0.9876819708846585
+AUC: 0.9734597749714411
+Cross Validation:
+0.987399 accuracy with a standard deviation of 0.003251
+
+ ----- Dataset 4 - Gym Membership -----
+Soft descision tree classifier:
+Accuracy: 0.9641025641025641
+AUC: 0.9646092268801347
+Cross Validation:
+0.957577 accuracy with a standard deviation of 0.019730
+GS best parameters: {'alpha': 0.05, 'n_runs': 50}
+GS Accuracy: 0.958974358974359
+GS AUC: 0.9592900779439646
+
+Weighted descision tree classifier:
+Accuracy: 0.9538461538461539
+AUC: 0.9543395828944596
+Cross Validation:
+0.953044 accuracy with a standard deviation of 0.020041
+GS best parameters: {'alpha': 0.1, 'n_runs': 100}
+GS Accuracy: 0.9282051282051282
+GS AUC: 0.927006530440278
+
+Regular descision tree classifier:
+Accuracy: 0.958974358974359
+AUC: 0.9592900779439646
+Cross Validation:
+0.966592 accuracy with a standard deviation of 0.009389
+
+ ----- Dataset 5 - Mountain vs Beaches-----
+Soft descision tree classifier:
+Accuracy: 0.9952331013442655
+AUC: 0.9933137409228652
+Cross Validation:
+0.994828 accuracy with a standard deviation of 0.001242
+GS best parameters: {'alpha': 0.1, 'n_runs': 100}
+GS Accuracy: 0.9923729621508247
+GS AUC: 0.9866541987690959
+
+Weighted descision tree classifier:
+Accuracy: 0.9957097912098388
+AUC: 0.9941322415498703
+Cross Validation:
+0.994160 accuracy with a standard deviation of 0.001050
+GS best parameters: {'alpha': 0.1, 'n_runs': 100}
+GS Accuracy: 0.9922776241777099
+GS AUC: 0.9868402063220424
+
+Regular descision tree classifier:
+Accuracy: 0.9956144532367242
+AUC: 0.9938186667051776
+Cross Validation:
+0.994292 accuracy with a standard deviation of 0.001552
+
+ ----- Dataset 6 - Water quality -----
+Soft descision tree classifier:
+Accuracy: 0.5856079404466501
+AUC: 0.5766615737203973
+Cross Validation:
+0.588617 accuracy with a standard deviation of 0.030560
+GS best parameters: {'alpha': 0.01, 'n_runs': 50}
+GS Accuracy: 0.575682382133995
+GS AUC: 0.5645403615991851
+
+Weighted descision tree classifier:
+Accuracy: 0.5905707196029777
+AUC: 0.5827221797810034
+Cross Validation:
+0.588311 accuracy with a standard deviation of 0.022097
+GS best parameters: {'alpha': 0.05, 'n_runs': 100}
+GS Accuracy: 0.5781637717121588
+GS AUC: 0.5675706646294881
+
+Regular descision tree classifier:
+Accuracy: 0.5806451612903226
+AUC: 0.5715304303539598
+Cross Validation:
+0.596090 accuracy with a standard deviation of 0.025572
